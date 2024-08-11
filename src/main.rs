@@ -1,7 +1,6 @@
 use crate::service::InMemoryPasteService;
 
 mod controller;
-mod repo;
 mod service;
 
 #[tokio::main]
