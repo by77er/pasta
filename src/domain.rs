@@ -1,30 +1,32 @@
+use crate::domain::PasteError::SlugTooLarge;
 use PasteError::ContentTooLarge;
 
 #[derive(Debug, Clone)]
 pub struct Paste {
-    slug: Option<String>,
+    slug: String,
     content: String,
 }
 
 pub enum PasteError {
-    ContentTooLarge
+    ContentTooLarge,
+    SlugTooLarge,
 }
 
 impl Paste {
-    pub fn new(content: String) -> Result<Self, PasteError> {
+    pub fn new(slug: String, content: String) -> Result<Self, PasteError> {
         // Invariants can be enforced here
+        if slug.len() > 256 {
+            return Err(SlugTooLarge);
+        }
         if content.len() > 1024 * 1024 {
-            return Err(ContentTooLarge)
+            return Err(ContentTooLarge);
         }
 
-        Ok(Self {
-            slug: None,
-            content,
-        })
+        Ok(Self { slug, content })
     }
 
-    pub fn get_slug(&self) -> Option<&str> {
-        (&self.slug).as_deref()
+    pub fn get_slug(&self) -> &str {
+        &self.slug
     }
 
     pub fn get_content(&self) -> &str {

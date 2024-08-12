@@ -1,3 +1,4 @@
+use crate::domain::{Paste, PasteError};
 use crate::repo::{PasteRepository, RepositoryError};
 use async_trait::async_trait;
 use rand::distributions::Alphanumeric;
@@ -5,7 +6,6 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use thiserror::Error;
-use crate::domain::{Paste, PasteError};
 
 #[derive(Debug, Error)]
 pub enum PasteServiceError {
@@ -99,10 +99,10 @@ impl PasteService for RepoBackedPasteService {
     }
 
     async fn create_paste(&self, content: String) -> Result<String, PasteServiceError> {
-        let paste = Paste::new(content)?;
+        let slug = self.repository.generate_slug().await?;
+        let paste = Paste::new(slug.clone(), content)?;
         let saved_paste = self.repository.save_paste(&paste).await?;
-        Ok(saved_paste.get_slug().unwrap().to_string())
-
+        Ok(slug)
     }
 
     async fn delete_paste(&self, slug: &str) -> Result<DeleteResult, PasteServiceError> {
@@ -118,7 +118,8 @@ impl PasteService for RepoBackedPasteService {
 impl From<PasteError> for PasteServiceError {
     fn from(value: PasteError) -> Self {
         match value {
-            PasteError::ContentTooLarge => PasteServiceError::ContentTooLarge
+            PasteError::ContentTooLarge => PasteServiceError::ContentTooLarge,
+            PasteError::SlugTooLarge => PasteServiceError::InvalidSlug,
         }
     }
 }
@@ -126,7 +127,7 @@ impl From<PasteError> for PasteServiceError {
 impl From<RepositoryError> for PasteServiceError {
     fn from(value: RepositoryError) -> Self {
         match value {
-            RepositoryError::UnknownError => PasteServiceError::InternalError
+            RepositoryError::UnknownError => PasteServiceError::InternalError,
         }
     }
 }

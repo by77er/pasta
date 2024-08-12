@@ -1,9 +1,9 @@
 use crate::service::InMemoryPasteService;
 
-mod presentation;
-mod service;
-mod repo;
 mod domain;
+mod presentation;
+mod repo;
+mod service;
 
 #[tokio::main]
 pub async fn main() {
