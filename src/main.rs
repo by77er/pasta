@@ -1,10 +1,12 @@
 use crate::service::InMemoryPasteService;
 
-mod controller;
+mod presentation;
 mod service;
+mod repo;
+mod domain;
 
 #[tokio::main]
 pub async fn main() {
     let paste_service = Box::new(InMemoryPasteService::new());
-    controller::listen(paste_service).await;
+    presentation::listen(paste_service).await;
 }
